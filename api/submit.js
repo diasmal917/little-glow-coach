@@ -5,7 +5,7 @@ const json = (res, status, body) => {
   res.setHeader('Content-Type', 'application/json; charset=utf-8');
   res.setHeader('Access-Control-Allow-Origin', process.env.ALLOWED_ORIGIN || '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, bypass-tunnel-reminder');
   res.end(JSON.stringify(body));
 };
 
@@ -16,7 +16,7 @@ module.exports = async function handler(req, res) {
   try {
     const chunks = [];
     for await (const chunk of req) chunks.push(chunk);
-    const body = JSON.parse(Buffer.concat(chunks).toString('utf8') || '{}');
+    const body = JSON.parse(Buffer.concat(chunks.map(c => Buffer.isBuffer(c) ? c : Buffer.from(String(c)))).toString('utf8') || '{}');
 
     const name = String(body.name || 'Nannie').slice(0, 80);
     const lessonTitle = String(body.lessonTitle || '').slice(0, 160);
