@@ -71,7 +71,12 @@ module.exports = async function handler(req, res) {
     if (!verification.ok) return json(res, 401, { ok: false, error: verification.error });
 
     const body = JSON.parse(rawBody || '{}');
-    if (body.type === 'url_verification') return json(res, 200, { challenge: body.challenge });
+    if (body.type === 'url_verification') {
+      res.statusCode = 200;
+      res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+      res.end(body.challenge || '');
+      return;
+    }
     if (body.type !== 'event_callback') return json(res, 200, { ok: true });
 
     const event = body.event;
