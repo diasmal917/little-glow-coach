@@ -1,4 +1,5 @@
 const { WebClient } = require('@slack/web-api');
+const { readRawBody } = require('./_shared');
 
 const json = (res, status, body) => {
   res.statusCode = status;
@@ -14,9 +15,7 @@ module.exports = async function handler(req, res) {
   if (req.method !== 'POST') return json(res, 405, { ok: false, error: 'method_not_allowed' });
 
   try {
-    const chunks = [];
-    for await (const chunk of req) chunks.push(chunk);
-    const body = JSON.parse(Buffer.concat(chunks.map(c => Buffer.isBuffer(c) ? c : Buffer.from(String(c)))).toString('utf8') || '{}');
+    const body = JSON.parse(await readRawBody(req) || '{}');
 
     const name = String(body.name || 'Nannie').slice(0, 80);
     const lessonTitle = String(body.lessonTitle || '').slice(0, 160);
