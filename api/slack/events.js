@@ -51,13 +51,21 @@ const askOpenAI = async (text) => {
   return output || null;
 };
 
+const allowedSlackUserIds = () => {
+  const configured = process.env.ALLOWED_SLACK_USER_IDS || process.env.NANNIE_SLACK_USER_ID || '';
+  return configured
+    .split(',')
+    .map(userId => userId.trim())
+    .filter(Boolean);
+};
+
 const shouldIgnoreEvent = (event) => {
   if (!event || !['message', 'app_mention'].includes(event.type)) return true;
   if (event.bot_id || event.subtype === 'bot_message') return true;
   if (event.subtype && event.subtype !== 'file_share') return true;
 
-  const allowedUser = process.env.NANNIE_SLACK_USER_ID;
-  if (allowedUser && event.user !== allowedUser) return true;
+  const allowedUsers = allowedSlackUserIds();
+  if (allowedUsers.length > 0 && !allowedUsers.includes(event.user)) return true;
 
   return false;
 };

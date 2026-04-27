@@ -4,7 +4,7 @@
 
 - `POST /api/submit` sends homework from the portal into Slack.
 - `POST /api/slack/events` receives Slack message events and replies as Chib.
-- Replies use OpenAI when `OPENAI_API_KEY` and `OPENAI_MODEL` are set. Without them, Chib sends a simple fallback coaching reply.
+- Replies use the built-in Thai-first coaching fallback unless an AI provider is added later.
 
 ## Deploy target
 
@@ -15,10 +15,8 @@ Set these environment variables on the API host:
 - `SLACK_BOT_TOKEN`
 - `SLACK_SIGNING_SECRET`
 - `DIAS_SLACK_USER_ID`
-- `NANNIE_SLACK_USER_ID`
+- `ALLOWED_SLACK_USER_IDS`, a comma-separated list of learner Slack user IDs Chib may reply to
 - `NANNIE_LEARNING_CHANNEL_ID` optional
-- `OPENAI_API_KEY` optional but recommended
-- `OPENAI_MODEL`
 - `ALLOWED_ORIGIN`, for example `https://diasmal917.github.io`
 
 Then update `public/public-config.js`:
@@ -49,3 +47,7 @@ Event subscriptions:
 - `message.channels` optional, only if she will use a public channel
 
 After changing scopes or events, reinstall the Slack app to the workspace.
+
+## Learner memory
+
+Keep learner memory separate from Dias's own Chib context. Store only teaching-useful notes by Slack user ID: goals, preferred tone, lesson progress, vocabulary, recurring mistakes, and short summaries. Avoid storing full raw conversations unless the learner knows that Chib is keeping them.
