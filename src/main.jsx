@@ -1,7 +1,421 @@
-import React,{useEffect,useState}from'react';import{createRoot}from'react-dom/client';import{Sparkles,Heart,Camera,Salad,Brain,MessageCircle,ShieldCheck,Train,CheckCircle2,RotateCcw}from'lucide-react';import{motion}from'framer-motion';import'./style.css';
-const lessons=[{id:'eng1',area:'English Quest',icon:MessageCircle,color:'#ff6fb1',xp:15,title:'แนะนำตัวแบบน่ารัก',subtitle:'พูดอังกฤษ 3 ประโยคเกี่ยวกับตัวเอง',phrases:['Hi, my name is Nannie.','I live in Bangkok.','I like fashion and cute cafes.'],task:'เขียน 3 ประโยคแนะนำตัวเป็นภาษาอังกฤษ แล้วอ่านออกเสียง 2 รอบ'},{id:'ai1',area:'AI Skill',icon:Brain,color:'#8b5cf6',xp:15,title:'ถาม AI ให้เก่ง',subtitle:'ใช้ AI ช่วยแปลแบบธรรมชาติ',phrases:['Make this sound natural.','Explain this in simple Thai.','Give me 5 cute captions.'],task:'ขอให้ AI ช่วยเขียน caption ภาษาอังกฤษสำหรับรูป outfit วันนี้ 5 แบบ'},{id:'fashion1',area:'Creator',icon:Camera,color:'#fb7185',xp:20,title:'Caption รูปแฟชั่น',subtitle:'เปลี่ยนรูป outfit เป็นโพสต์ที่ดูแพง',phrases:['Today’s look is simple but cute.','Soft girl energy today.','Bangkok cafe day.'],task:'เลือก 1 รูป แล้วเขียน caption อังกฤษ 1 แบบ + ไทย 1 แบบ'},{id:'stoic1',area:'Stoic Mind',icon:Heart,color:'#f97316',xp:10,title:'อะไรควบคุมได้?',subtitle:'ใจนิ่งขึ้นด้วยคำถามง่ายๆ',phrases:['I can control my actions.','I cannot control other people.','I will do my best today.'],task:'เขียน 1 เรื่องที่กังวล แล้วแยก: ควบคุมได้ / ควบคุมไม่ได้'},{id:'bkk1',area:'Bangkok Life',icon:Train,color:'#06b6d4',xp:15,title:'สั่งกาแฟเป็นอังกฤษ',subtitle:'ใช้ได้จริงที่คาเฟ่ในกรุงเทพ',phrases:['Can I have an iced latte, please?','Less sweet, please.','Can I pay by QR?'],task:'ซ้อมพูดประโยคสั่งเครื่องดื่ม 3 รอบ'},{id:'food1',area:'Healthy Food',icon:Salad,color:'#22c55e',xp:20,title:'Guacamole ง่ายๆ',subtitle:'อร่อย สุขภาพดี และถ่ายรูปสวย',phrases:['avocado','lime','a pinch of salt'],task:'ทำ guacamole หรือวางแผนซื้อของ 3 อย่าง: avocado, lime, tomato'},{id:'safe1',area:'Safety',icon:ShieldCheck,color:'#14b8a6',xp:10,title:'DM แปลกๆ ต้องระวัง',subtitle:'สวยได้ แต่ต้องปลอดภัย',phrases:['No, thank you.','I am not comfortable sharing that.','Please contact me by email.'],task:'เขียนคำตอบสุภาพ 1 ประโยคสำหรับ DM ที่ขอข้อมูลส่วนตัว'}];
-const recipes=[{name:'Guacamole',time:'10 นาที',steps:['บดอะโวคาโด','ใส่มะนาว เกลือ มะเขือเทศ','กินกับไข่ ขนมปัง หรือผัก']},{name:'Tuna Rice Bowl',time:'8 นาที',steps:['ข้าวเล็กน้อย','ทูน่า + ไข่','แตงกวา/ผัก + ซอสเล็กน้อย']},{name:'โยเกิร์ตผลไม้',time:'5 นาที',steps:['Greek yogurt','กล้วย/เบอร์รี่','โรยถั่วนิดหน่อย']}];
-function gp(){try{return JSON.parse(localStorage.getItem('nannie-progress')||'{}')}catch{return{}}}function sp(p){localStorage.setItem('nannie-progress',JSON.stringify(p))}
-function App(){const[progress,setProgress]=useState(gp());const done=progress.done||[];const xp=done.reduce((s,id)=>s+(lessons.find(l=>l.id===id)?.xp||0),0);const level=Math.floor(xp/60)+1;const pct=Math.min(100,Math.round((xp%60)/60*100));const streak=progress.streak||(done.length?1:0);useEffect(()=>sp(progress),[progress]);const today=lessons[done.length%lessons.length];const complete=id=>{if(done.includes(id))return;setProgress({...progress,done:[...done,id],streak:Math.max(1,streak),last:new Date().toISOString()})};return <main><section className="hero"><motion.div initial={{opacity:0,y:18}} animate={{opacity:1,y:0}} className="heroText"><div className="pill"><Sparkles size={16}/> Thai-first creator academy</div><h1>Nannie Coach</h1><p>เรียนอังกฤษ ใช้ AI เก่งขึ้น ดูแลสุขภาพ และสร้างคอนเทนต์แฟชั่น — วันละนิด แบบสนุกเหมือนเกม</p><div className="stats"><div><b>{xp}</b><span>XP</span></div><div><b>{level}</b><span>Level</span></div><div><b>{streak}</b><span>Streak</span></div></div></motion.div><motion.div initial={{scale:.9,opacity:0}} animate={{scale:1,opacity:1}} className="phoneCard"><div className="mascot">✨</div><h2>ภารกิจวันนี้</h2><p>{today.title}</p><div className="progress"><i style={{width:`${pct}%`}}/></div><small>อีก {60-(xp%60)} XP จะเลเวลอัพ</small></motion.div></section><section className="section"><h2>Daily Quests</h2><div className="grid">{lessons.map((l,idx)=><Lesson key={l.id} lesson={l} done={done.includes(l.id)} complete={complete} locked={idx>done.length+1}/>)}</div></section><section className="section split"><div className="panel"><h2>Weekly Exam</h2><p>คะแนนเต็ม 20: อังกฤษ 5 + AI 5 + วินัย 5 + reflection 5</p><ul className="checklist"><li>พูดแนะนำตัว 30 วินาที</li><li>เขียน caption อังกฤษ 3 แบบ</li><li>ใช้ AI ช่วยวางแผนอาหารสุขภาพ 1 วัน</li><li>เขียนสิ่งที่ควบคุมได้ / ไม่ได้</li></ul></div><div className="panel recipes"><h2>Healthy Yummy Recipes</h2>{recipes.map(r=><div className="recipe" key={r.name}><b>{r.name}</b><span>{r.time}</span><p>{r.steps.join(' → ')}</p></div>)}</div></section><section className="section panel install"><h2>Slack Accountability</h2><p>หลังทำบทเรียน ให้พิมพ์คำตอบแล้วกด “ส่งให้ Chib ใน Slack”. ถ้า backend เปิดอยู่ ระบบจะส่งอัตโนมัติ ถ้ายังไม่เปิด ระบบจะคัดลอกข้อความให้ส่งเอง</p><p><b>กติกา:</b> ทำวันละ 1 ภารกิจ ส่งใน Slack และสอบทุกวันเสาร์</p></section><section className="section panel install"><h2>ติดตั้งบนมือถือ</h2><p>เปิดเว็บนี้ใน Safari/Chrome → กด Share → Add to Home Screen. แอปจะอยู่บนหน้าจอเหมือนแอปมือถือ</p><button onClick={()=>setProgress({done:[],streak:0})}><RotateCcw size={16}/> Reset demo progress</button></section></main>}
-function Lesson({lesson,done,complete,locked}){const Icon=lesson.icon;const[answer,setAnswer]=useState('');const[status,setStatus]=useState('');const submit=async()=>{if(!answer.trim()){alert('เขียนคำตอบก่อนนะคะ');return}setStatus('กำลังส่ง...');const payload={name:'Nannie',lessonTitle:lesson.title,lessonArea:lesson.area,xp:lesson.xp,answer};try{const endpoint=window.NANNIE_API_ENDPOINT||'/api/submit';const r=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json','bypass-tunnel-reminder':'1'},body:JSON.stringify(payload)});if(!r.ok)throw new Error('submit failed');setStatus('ส่งแล้วค่ะ ✨');complete(lesson.id)}catch(e){const msg=`สวัสดี Chib ค่ะ หนูทำการบ้านแล้ว\nบทเรียน: ${lesson.title}\nคำตอบของหนู: ${answer}`;navigator.clipboard?.writeText(msg);setStatus('ส่งอัตโนมัติไม่ได้ — คัดลอกข้อความให้แล้ว เปิด Slack แล้ววางส่งให้ Chib ค่ะ')}};return <motion.article whileHover={{y:-4}} className={`card ${done?'done':''} ${locked?'locked':''}`}><div className="top"><span style={{background:lesson.color}}><Icon size={19}/></span><em>{lesson.area}</em></div><h3>{lesson.title}</h3><p>{lesson.subtitle}</p><div className="phrases">{lesson.phrases.map(p=><code key={p}>{p}</code>)}</div><p className="task"><b>Homework:</b> {lesson.task}</p><textarea disabled={locked} value={answer} onChange={e=>setAnswer(e.target.value)} placeholder="พิมพ์คำตอบการบ้านตรงนี้..."/><div className="actions"><button disabled={done||locked} onClick={()=>complete(lesson.id)}>{done?<><CheckCircle2 size={16}/> เสร็จแล้ว</>:locked?'ล็อกไว้':'รับ XP'}</button><button className="ghost" disabled={locked} onClick={submit}>ส่งให้ Chib ใน Slack</button></div>{status&&<p className="status">{status}</p>}</motion.article>}
-createRoot(document.getElementById('root')).render(<App/>);
+import React, { useEffect, useMemo, useState } from 'react';
+import { createRoot } from 'react-dom/client';
+import { motion } from 'framer-motion';
+import {
+  Award,
+  Bot,
+  Brain,
+  Camera,
+  Check,
+  ChevronRight,
+  Flame,
+  Heart,
+  Mic2,
+  RotateCcw,
+  Send,
+  ShieldCheck,
+  Sparkles,
+  Star,
+  Trophy,
+  WalletCards,
+} from 'lucide-react';
+import './style.css';
+
+const tracks = [
+  {
+    id: 'english',
+    title: 'English Voice',
+    icon: Mic2,
+    color: '#2f9cf4',
+    description: 'Speak first, grammar second.',
+    lessons: [
+      {
+        id: 'eng-intro',
+        xp: 18,
+        title: 'แนะนำตัว 30 วินาที',
+        task: 'พูดหรือเขียน 3 ประโยค: ชื่อ, อยู่ที่ไหน, วันนี้รู้สึกยังไง',
+        examples: ['My name is Nannie.', 'I live in Bangkok.', 'Today I feel calm because I practiced.'],
+      },
+      {
+        id: 'eng-cafe',
+        xp: 16,
+        title: 'สั่งกาแฟแบบมั่นใจ',
+        task: 'ซ้อมพูดประโยคสั่งเครื่องดื่ม 3 รอบ',
+        examples: ['Can I have an iced latte, please?', 'Less sweet, please.', 'Can I pay by QR?'],
+      },
+      {
+        id: 'eng-feeling',
+        xp: 14,
+        title: 'พูดความรู้สึกง่ายๆ',
+        task: 'เลือก 1 อารมณ์ แล้วแต่งประโยคอังกฤษ 2 ประโยค',
+        examples: ['I feel proud today.', 'I was nervous, but I tried.'],
+      },
+    ],
+  },
+  {
+    id: 'ai',
+    title: 'AI Skills',
+    icon: Brain,
+    color: '#23b26d',
+    description: 'Use AI like a smart helper.',
+    lessons: [
+      {
+        id: 'ai-caption',
+        xp: 20,
+        title: 'Prompt ให้ได้ caption',
+        task: 'ขอให้ AI ช่วยเขียน caption ภาษาอังกฤษ 5 แบบสำหรับรูปวันนี้',
+        examples: ['Make this sound natural.', 'Give me 5 cute captions.', 'Explain your changes in Thai.'],
+      },
+      {
+        id: 'ai-translate',
+        xp: 18,
+        title: 'แปลแบบเป็นธรรมชาติ',
+        task: 'เอาประโยคไทย 1 ประโยคไปให้ AI แปลเป็นอังกฤษแบบน่ารัก',
+        examples: ['Translate this naturally.', 'Make it softer.', 'Make it sound confident.'],
+      },
+    ],
+  },
+  {
+    id: 'creator',
+    title: 'Creator Studio',
+    icon: Camera,
+    color: '#ff8f3d',
+    description: 'Turn taste into little outputs.',
+    lessons: [
+      {
+        id: 'creator-outfit',
+        xp: 18,
+        title: 'Outfit caption',
+        task: 'เลือก 1 รูป แล้วเขียน caption อังกฤษ 1 แบบ + ไทย 1 แบบ',
+        examples: ['Soft girl energy today.', 'Simple, clean, and cute.', 'Bangkok cafe day.'],
+      },
+      {
+        id: 'creator-shotlist',
+        xp: 18,
+        title: 'Shot list 3 รูป',
+        task: 'วางแผนรูป 3 แบบ: wide, detail, selfie',
+        examples: ['Wide shot', 'Close-up detail', 'Mirror selfie'],
+      },
+    ],
+  },
+  {
+    id: 'health',
+    title: 'Healthy Routine',
+    icon: Heart,
+    color: '#ff6f91',
+    description: 'Tiny daily body care.',
+    lessons: [
+      {
+        id: 'health-water',
+        xp: 12,
+        title: 'น้ำ + เดินเบาๆ',
+        task: 'ดื่มน้ำ 1 แก้ว แล้วเดินหรือยืดตัว 5 นาที',
+        examples: ['I drank water.', 'I walked for five minutes.', 'My body feels lighter.'],
+      },
+      {
+        id: 'health-food',
+        xp: 16,
+        title: 'Healthy yummy plate',
+        task: 'วางแผนอาหารง่ายๆ 1 มื้อ: protein + vegetable + fruit',
+        examples: ['egg', 'tuna', 'avocado', 'banana'],
+      },
+    ],
+  },
+  {
+    id: 'money',
+    title: 'Money & Safety',
+    icon: WalletCards,
+    color: '#18b7b1',
+    description: 'Be kind, but not careless.',
+    lessons: [
+      {
+        id: 'safety-dm',
+        xp: 15,
+        title: 'DM แปลกๆ ต้องระวัง',
+        task: 'เขียนคำตอบสุภาพ 1 ประโยคเมื่อมีคนขอข้อมูลส่วนตัว',
+        examples: ['I am not comfortable sharing that.', 'No, thank you.', 'Please contact me by email.'],
+      },
+      {
+        id: 'money-budget',
+        xp: 15,
+        title: 'เงินวันนี้',
+        task: 'เขียน spending plan ง่ายๆ: food, travel, save',
+        examples: ['Food budget', 'Travel budget', 'Save a little first.'],
+      },
+    ],
+  },
+  {
+    id: 'confidence',
+    title: 'Confidence',
+    icon: ShieldCheck,
+    color: '#7864f4',
+    description: 'Quiet strength, daily.',
+    lessons: [
+      {
+        id: 'mind-control',
+        xp: 14,
+        title: 'อะไรควบคุมได้?',
+        task: 'เขียน 1 เรื่องที่กังวล แล้วแยก: ควบคุมได้ / ควบคุมไม่ได้',
+        examples: ['I can control my actions.', 'I cannot control other people.', 'I will do my best today.'],
+      },
+      {
+        id: 'mind-proud',
+        xp: 14,
+        title: 'หนึ่งอย่างที่ภูมิใจ',
+        task: 'เขียน 1 บรรทัดว่าทำอะไรดีแล้ววันนี้',
+        examples: ['I practiced even though I was shy.', 'I kept my promise today.'],
+      },
+    ],
+  },
+];
+
+const accountabilityItems = [
+  { id: 'voice', title: 'Voice practice', detail: 'พูดอังกฤษ 1 นาที' },
+  { id: 'body', title: 'Healthy step', detail: 'น้ำหรือเดินเบาๆ' },
+  { id: 'reflect', title: 'Reflection', detail: 'เขียนใจตัวเอง 1 บรรทัด' },
+];
+
+const badges = [
+  { id: 'first', title: 'First Quest', need: 1, icon: Star },
+  { id: 'voice', title: 'Voice Brave', need: 2, icon: Mic2 },
+  { id: 'creator', title: 'Soft Creator', need: 4, icon: Camera },
+  { id: 'week', title: 'Week Spark', need: 7, icon: Flame },
+  { id: 'safe', title: 'Safe Online', need: 10, icon: ShieldCheck },
+];
+
+const storageKey = 'nannie-academy-progress-v2';
+
+function readProgress() {
+  try {
+    return JSON.parse(localStorage.getItem(storageKey) || '{}');
+  } catch {
+    return {};
+  }
+}
+
+function App() {
+  const [progress, setProgress] = useState(readProgress);
+  const [activeTrack, setActiveTrack] = useState('english');
+  const [answer, setAnswer] = useState('');
+  const [submitStatus, setSubmitStatus] = useState('');
+
+  const done = progress.done || [];
+  const daily = progress.daily || {};
+  const selected = tracks.find((track) => track.id === activeTrack) || tracks[0];
+  const allLessons = tracks.flatMap((track) => track.lessons.map((lesson) => ({ ...lesson, track: track.title })));
+  const todayLesson = allLessons[done.length % allLessons.length];
+  const xp = done.reduce((sum, id) => sum + (allLessons.find((lesson) => lesson.id === id)?.xp || 0), 0);
+  const level = Math.floor(xp / 80) + 1;
+  const nextLevelXp = 80 - (xp % 80 || 80);
+  const completeCount = done.length;
+  const dailyDone = accountabilityItems.filter((item) => daily[item.id]).length;
+  const accountabilityPercent = Math.round(((completeCount + dailyDone) / 28) * 100);
+
+  useEffect(() => {
+    localStorage.setItem(storageKey, JSON.stringify(progress));
+  }, [progress]);
+
+  const completeQuest = (lessonId) => {
+    if (done.includes(lessonId)) return;
+    setProgress({ ...progress, done: [...done, lessonId], streak: Math.max(1, progress.streak || 0) + 1, lastDoneAt: new Date().toISOString() });
+  };
+
+  const toggleDaily = (itemId) => {
+    setProgress({ ...progress, daily: { ...daily, [itemId]: !daily[itemId] } });
+  };
+
+  const reset = () => {
+    setProgress({ done: [], daily: {}, streak: 0 });
+    setAnswer('');
+    setSubmitStatus('');
+  };
+
+  const submitToChib = async () => {
+    if (!answer.trim()) {
+      setSubmitStatus('เขียนคำตอบก่อนนะคะ');
+      return;
+    }
+
+    setSubmitStatus('กำลังส่ง...');
+    const payload = { name: 'Nannie', lessonTitle: todayLesson.title, lessonArea: todayLesson.track, xp: todayLesson.xp, answer };
+
+    try {
+      const endpoint = window.NANNIE_API_ENDPOINT || '/api/submit';
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'bypass-tunnel-reminder': '1' },
+        body: JSON.stringify(payload),
+      });
+      if (!response.ok) throw new Error('Submit failed');
+      completeQuest(todayLesson.id);
+      setSubmitStatus('ส่งให้ Chib แล้วค่ะ');
+    } catch {
+      const fallback = `สวัสดี Chib ค่ะ หนูทำภารกิจแล้ว\nบทเรียน: ${todayLesson.title}\nคำตอบของหนู: ${answer}`;
+      navigator.clipboard?.writeText(fallback);
+      setSubmitStatus('ส่งอัตโนมัติไม่ได้ แต่คัดลอกข้อความไว้ให้แล้วค่ะ');
+    }
+  };
+
+  const trackCompletion = (track) => Math.round((track.lessons.filter((lesson) => done.includes(lesson.id)).length / track.lessons.length) * 100);
+
+  return (
+    <main className="academy-shell">
+      <aside className="track-rail" aria-label="Learning tracks">
+        <div className="rail-logo"><Bot size={22} /></div>
+        {tracks.map((track) => {
+          const Icon = track.icon;
+          return (
+            <button key={track.id} className={activeTrack === track.id ? 'rail-button active' : 'rail-button'} onClick={() => setActiveTrack(track.id)} title={track.title}>
+              <Icon size={19} />
+              <span>{track.title}</span>
+            </button>
+          );
+        })}
+      </aside>
+
+      <section className="academy-main">
+        <header className="topbar">
+          <div>
+            <h1>Nannie’s Daily Quest</h1>
+            <p>English, AI, creator confidence, health, money safety, and calm reflection.</p>
+          </div>
+          <button className="icon-action" onClick={reset} title="Reset progress"><RotateCcw size={18} /></button>
+        </header>
+
+        <section className="dashboard-grid">
+          <motion.article className="profile-card" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }}>
+            <div className="mascot-banner">
+              <span className="spark one" />
+              <div className="mascot-face"><span /><span /></div>
+              <span className="spark two" />
+            </div>
+            <p className="eyebrow">Learner</p>
+            <h2>Nannie</h2>
+            <p className="muted">Bangkok glow-up academy</p>
+            <div className="stat-row">
+              <Stat icon={Star} label="XP" value={xp} />
+              <Stat icon={Trophy} label="Level" value={level} />
+              <Stat icon={Flame} label="Streak" value={progress.streak || 0} />
+            </div>
+            <div className="ring-row">
+              <div className="ring" style={{ '--value': `${Math.min(100, accountabilityPercent)}%` }}><span>{Math.min(100, accountabilityPercent)}%</span></div>
+              <p>Weekly accountability progress. Keep the loop gentle but visible.</p>
+            </div>
+          </motion.article>
+
+          <motion.article className="quest-card" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.06 }}>
+            <div className="card-head">
+              <div>
+                <p className="eyebrow">Today</p>
+                <h2>{todayLesson.title}</h2>
+                <p>{todayLesson.track}</p>
+              </div>
+              <span className="xp-pill">+{todayLesson.xp} XP</span>
+            </div>
+            <p className="task-text">{todayLesson.task}</p>
+            <div className="example-row">{todayLesson.examples.map((example) => <code key={example}>{example}</code>)}</div>
+            <textarea value={answer} onChange={(event) => setAnswer(event.target.value)} placeholder="พิมพ์คำตอบของ Nannie ตรงนี้..." />
+            <div className="action-row">
+              <button onClick={submitToChib}><Send size={17} /> ส่งให้ Chib</button>
+              {submitStatus && <span>{submitStatus}</span>}
+            </div>
+          </motion.article>
+
+          <motion.article className="account-card" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+            <div className="card-head compact">
+              <div>
+                <h2>Accountability</h2>
+                <p>{dailyDone}/3 complete today</p>
+              </div>
+              <ShieldCheck size={20} />
+            </div>
+            {accountabilityItems.map((item) => (
+              <button key={item.id} className={daily[item.id] ? 'check-item done' : 'check-item'} onClick={() => toggleDaily(item.id)}>
+                <span>{daily[item.id] && <Check size={14} />}</span>
+                <strong>{item.title}</strong>
+                <small>{item.detail}</small>
+              </button>
+            ))}
+          </motion.article>
+        </section>
+
+        <section className="content-grid">
+          <article className="lesson-map">
+            <div className="card-head">
+              <div>
+                <h2>{selected.title}</h2>
+                <p>{selected.description}</p>
+              </div>
+              <span className="xp-pill">{selected.lessons.length} quests</span>
+            </div>
+            {selected.lessons.map((lesson, index) => {
+              const isDone = done.includes(lesson.id);
+              return (
+                <button key={lesson.id} className={isDone ? 'lesson-node complete' : 'lesson-node'} onClick={() => completeQuest(lesson.id)} disabled={isDone}>
+                  <span>{isDone ? <Check size={20} /> : index + 1}</span>
+                  <div>
+                    <strong>{lesson.title}</strong>
+                    <p>{lesson.task}</p>
+                  </div>
+                  <ChevronRight size={18} />
+                </button>
+              );
+            })}
+          </article>
+
+          <aside className="side-stack">
+            <article className="voice-card">
+              <div className="mini-icons"><Mic2 /><Sparkles /><Bot /></div>
+              <h2>ChatGPT Voice Classroom</h2>
+              <p>ใช้ GPT ส่วนตัวเป็นห้องพูดจริง แล้วให้ Slack เป็นสมุดเตือนและติดตามผล</p>
+              <a href="https://chatgpt.com/gpts" target="_blank" rel="noreferrer">Open Voice</a>
+              <small>Next: replace this with Nannie’s private GPT link.</small>
+            </article>
+
+            <article className="rewards-card">
+              <div className="card-head compact"><h2>Rewards</h2><p>Badges unlock as she practices</p></div>
+              <div className="badge-grid">
+                {badges.map((badge) => {
+                  const Icon = badge.icon;
+                  const unlocked = completeCount >= badge.need;
+                  return <div key={badge.id} className={unlocked ? 'badge unlocked' : 'badge'}><Icon size={18} /><span>{badge.title}</span></div>;
+                })}
+              </div>
+            </article>
+
+            <article className="notes-card">
+              <h2>Mentor Notes</h2>
+              <p>Separate learner memory</p>
+              <ul>
+                <li>Thai-first explanations, tiny English examples</li>
+                <li>One quest at a time; praise effort before correction</li>
+                <li>Voice practice should feel light, not like a test</li>
+                <li>Memory should track progress, not private diary details</li>
+              </ul>
+              <p className="next-level">{nextLevelXp} XP until next level</p>
+            </article>
+          </aside>
+        </section>
+
+        <section className="track-grid">
+          {tracks.map((track) => {
+            const Icon = track.icon;
+            return (
+              <button key={track.id} className="track-tile" onClick={() => setActiveTrack(track.id)}>
+                <span style={{ background: track.color }}><Icon size={18} /></span>
+                <strong>{track.title}</strong>
+                <small>{trackCompletion(track)}% complete</small>
+              </button>
+            );
+          })}
+        </section>
+      </section>
+    </main>
+  );
+}
+
+function Stat({ icon: Icon, label, value }) {
+  return <div className="stat"><Icon size={17} /><strong>{value}</strong><span>{label}</span></div>;
+}
+
+createRoot(document.getElementById('root')).render(<App />);
