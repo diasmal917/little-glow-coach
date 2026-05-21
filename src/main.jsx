@@ -51,7 +51,7 @@ const badges = [
   { id: 'safe', title: 'Safe Online', need: 10, icon: ShieldCheck },
 ];
 
-const storageKey = 'nannie-academy-progress-v6';
+const storageKey = 'nannie-academy-progress-v7';
 
 function readProgress() {
   try { return JSON.parse(localStorage.getItem(storageKey) || '{}'); } catch { return {}; }
@@ -79,7 +79,7 @@ function App() {
   const level = Math.floor(xp / 80) + 1;
   const nextLevelXp = xp % 80 === 0 && xp > 0 ? 80 : 80 - (xp % 80);
   const dailyDone = accountabilityItems.filter((item) => daily[item.id]).length;
-  const accountabilityPercent = Math.min(100, Math.round(((done.length + dailyDone) / 32) * 100));
+  const accountabilityPercent = Math.min(100, Math.round(((done.length + dailyDone) / 30) * 100));
 
   useEffect(() => { localStorage.setItem(storageKey, JSON.stringify(progress)); }, [progress]);
 
@@ -94,7 +94,7 @@ function App() {
     const prompt = `${mentorVoice}\n\nLesson: ${lesson.title}\n${lesson.chatgpt}\n\nAfter we finish, give me:\n1. three corrected sentences\n2. one phrase to memorize\n3. a tiny homework task I can paste into Nannie Academy`;
     try {
       await navigator.clipboard?.writeText(prompt);
-      setPromptStatus('Copied prompt for ChatGPT');
+      setPromptStatus('Copied. Open ChatGPT, paste it, then tap voice.');
     } catch {
       setPromptStatus(prompt);
     }
@@ -109,11 +109,10 @@ function App() {
       const response = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json', 'bypass-tunnel-reminder': '1' }, body: JSON.stringify(payload) });
       if (!response.ok) throw new Error('Submit failed');
       completeQuest(todayLesson.id);
-      setSubmitStatus('ส่งให้ Chib แล้วค่ะ');
+      setSubmitStatus('บันทึกแล้วค่ะ');
     } catch {
-      const fallback = `สวัสดี Chib ค่ะ หนูทำภารกิจแล้ว\nบทเรียน: ${todayLesson.title}\nคำตอบของหนู: ${answer}`;
-      navigator.clipboard?.writeText(fallback);
-      setSubmitStatus('ส่งอัตโนมัติไม่ได้ แต่คัดลอกข้อความไว้ให้แล้วค่ะ');
+      completeQuest(todayLesson.id);
+      setSubmitStatus('บันทึกในเครื่องนี้แล้วค่ะ');
     }
   };
   const trackCompletion = (track) => Math.round((track.lessons.filter((lesson) => done.includes(lesson.id)).length / track.lessons.length) * 100);
@@ -125,16 +124,16 @@ function App() {
     </aside>
 
     <section className="academy-main">
-      <header className="topbar"><div><p className="place-pill">Warm mentor voice from Suwannaphum</p><h1>Nannie Academy</h1><p>Pick a quest here, practice with ChatGPT voice, then save the win.</p></div><button className="icon-action" onClick={reset} title="Reset progress"><RotateCcw size={18} /></button></header>
+      <header className="topbar"><div><p className="place-pill">Warm mentor voice from Suwannaphum</p><h1>Nannie Academy</h1><p>Pick one quest, practice with ChatGPT voice, then save what you learned.</p></div><button className="icon-action" onClick={reset} title="Reset progress"><RotateCcw size={18} /></button></header>
 
       <section className="dashboard-grid">
-        <motion.article className="profile-card" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }}><div className="mascot-banner"><MascotPair /><span className="spark one" /><span className="spark two" /></div><p className="eyebrow">Learner</p><h2>Nannie</h2><p className="muted">Suwannaphum roots, Bangkok pace, one small win at a time.</p><div className="stat-row"><Stat icon={Star} label="XP" value={xp} /><Stat icon={Trophy} label="Level" value={level} /><Stat icon={Flame} label="Streak" value={progress.streak || 0} /></div><div className="ring-row"><div className="ring" style={{ '--value': `${accountabilityPercent}%` }}><span>{accountabilityPercent}%</span></div><p>Weekly progress for practice, reflection, and check-ins.</p></div></motion.article>
-        <motion.article className="quest-card" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.06 }}><div className="card-head"><div><p className="eyebrow">Today with {todayLesson.helper}</p><h2>{todayLesson.title}</h2><p>{todayLesson.track}</p></div><span className="xp-pill">+{todayLesson.xp} XP</span></div><p className="task-text">{todayLesson.task}</p><div className="example-row">{todayLesson.examples.map((example) => <code key={example}>{example}</code>)}</div><div className="chatgpt-inline"><button type="button" onClick={() => copyChatGPTPrompt(todayLesson)}><Clipboard size={16} /> Copy ChatGPT prompt</button><a href={chatgptUrl} target="_blank" rel="noreferrer"><MessageCircle size={16} /> Open ChatGPT</a></div>{promptStatus && <p className="prompt-status">{promptStatus}</p>}<textarea value={answer} onChange={(event) => setAnswer(event.target.value)} placeholder="หลังจากคุยกับ ChatGPT แล้ว พิมพ์สิ่งที่ Nannie เรียนตรงนี้..." /><div className="action-row"><button onClick={submitToChib}><Send size={17} /> ส่งให้ Chib</button>{submitStatus && <span>{submitStatus}</span>}</div></motion.article>
-        <motion.article className="account-card" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}><div className="card-head compact"><div><h2>Accountability</h2><p>{dailyDone}/3 complete today</p></div><ShieldCheck size={20} /></div>{accountabilityItems.map((item) => <button key={item.id} className={daily[item.id] ? 'check-item done' : 'check-item'} onClick={() => toggleDaily(item.id)}><span>{daily[item.id] && <Check size={14} />}</span><strong>{item.title}</strong><small>{item.detail}</small></button>)}</motion.article>
+        <motion.article className="profile-card" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }}><div className="mascot-banner"><MascotPair /><span className="spark one" /><span className="spark two" /></div><p className="eyebrow">Learner</p><h2>Nannie</h2><p className="muted">Suwannaphum roots, Bangkok pace, one small win at a time.</p><div className="stat-row"><Stat icon={Star} label="XP" value={xp} /><Stat icon={Trophy} label="Level" value={level} /><Stat icon={Flame} label="Streak" value={progress.streak || 0} /></div><div className="ring-row"><div className="ring" style={{ '--value': `${accountabilityPercent}%` }}><span>{accountabilityPercent}%</span></div><p>Daily practice, short reflection, steady progress.</p></div></motion.article>
+        <motion.article className="quest-card" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.06 }}><div className="card-head"><div><p className="eyebrow">Start here</p><h2>{todayLesson.title}</h2><p>{todayLesson.track} with {todayLesson.helper}</p></div><span className="xp-pill">+{todayLesson.xp} XP</span></div><p className="task-text">{todayLesson.task}</p><div className="example-row">{todayLesson.examples.map((example) => <code key={example}>{example}</code>)}</div><div className="chatgpt-inline"><button type="button" onClick={() => copyChatGPTPrompt(todayLesson)}><Clipboard size={16} /> Copy prompt</button><a href={chatgptUrl} target="_blank" rel="noreferrer"><MessageCircle size={16} /> Open ChatGPT</a></div>{promptStatus && <p className="prompt-status">{promptStatus}</p>}<textarea value={answer} onChange={(event) => setAnswer(event.target.value)} placeholder="หลังจากคุยกับ ChatGPT แล้ว พิมพ์ 1 อย่างที่ได้เรียนตรงนี้..." /><div className="action-row"><button onClick={submitToChib}><Send size={17} /> Save progress</button>{submitStatus && <span>{submitStatus}</span>}</div></motion.article>
+        <motion.article className="account-card" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}><div className="card-head compact"><div><h2>Today</h2><p>{dailyDone}/3 complete</p></div><ShieldCheck size={20} /></div>{accountabilityItems.map((item) => <button key={item.id} className={daily[item.id] ? 'check-item done' : 'check-item'} onClick={() => toggleDaily(item.id)}><span>{daily[item.id] && <Check size={14} />}</span><strong>{item.title}</strong><small>{item.detail}</small></button>)}</motion.article>
       </section>
 
       <section className="content-grid"><article className="lesson-map"><div className="card-head"><div><h2>{selected.title}</h2><p>{selected.description}</p><p className="helper-line">Helper: {selected.helper}</p></div><span className="xp-pill">{selected.lessons.length} quests</span></div>{selected.lessons.map((lesson, index) => { const isDone = done.includes(lesson.id); return <button key={lesson.id} className={isDone ? 'lesson-node complete' : 'lesson-node'} onClick={() => completeQuest(lesson.id)} disabled={isDone}><span>{isDone ? <Check size={20} /> : index + 1}</span><div><strong>{lesson.title}</strong><p>{lesson.task}</p></div><ChevronRight size={18} /></button>; })}</article>
-        <aside className="side-stack"><article className="voice-card"><div className="mini-mascots"><div className="tiny-bear" /><div className="tiny-kitty" /></div><h2>ChatGPT Voice Room</h2><p>Use ChatGPT Plus for live speaking with a warm Suwannaphum mentor style.</p><a href={chatgptUrl} target="_blank" rel="noreferrer"><ExternalLink size={16} /> Open ChatGPT</a><small>Best flow: copy prompt, open ChatGPT, tap voice, practice, paste the lesson summary here.</small></article><article className="chatgpt-card"><h2>How Nannie Should Use It</h2><ol><li>Pick one quest in Nannie Academy.</li><li>Copy the ChatGPT prompt.</li><li>Open ChatGPT and use voice mode for 3-5 minutes.</li><li>Paste the best correction or homework here.</li></ol><p>ChatGPT is the tutor. Nannie Academy is the map, rewards, and memory.</p></article><article className="rewards-card"><div className="card-head compact"><h2>Rewards</h2><p>Badges unlock as she practices</p></div><div className="badge-grid">{badges.map((badge) => { const Icon = badge.icon; const unlocked = done.length >= badge.need; return <div key={badge.id} className={unlocked ? 'badge unlocked' : 'badge'}><Icon size={18} /><span>{badge.title}</span></div>; })}</div></article><article className="notes-card"><h2>Mentor Notes</h2><p>Separate learner memory</p><ul><li>Teach like a compassionate mentor from Suwannaphum</li><li>Use Roi Et references only when they make the lesson warmer</li><li>Use ChatGPT for voice and roleplay</li><li>Memory should track progress, not private diary details</li></ul><p className="next-level">{nextLevelXp} XP until next level</p></article></aside>
+        <aside className="side-stack"><article className="voice-card"><div className="mini-mascots"><div className="tiny-bear" /><div className="tiny-kitty" /></div><h2>ChatGPT Voice Room</h2><p>Use ChatGPT Plus for live speaking with a warm Suwannaphum mentor style.</p><a href={chatgptUrl} target="_blank" rel="noreferrer"><ExternalLink size={16} /> Open ChatGPT</a><small>Copy prompt, open ChatGPT, tap voice, practice, then save one thing you learned here.</small></article><article className="chatgpt-card"><h2>How To Start Tomorrow</h2><ol><li>Open Nannie Academy.</li><li>Tap Copy prompt.</li><li>Open ChatGPT and paste it.</li><li>Tap voice and practice for 3-5 minutes.</li><li>Come back and save one sentence.</li></ol><p>One quest per day is enough.</p></article><article className="rewards-card"><div className="card-head compact"><h2>Rewards</h2><p>Badges unlock as she practices</p></div><div className="badge-grid">{badges.map((badge) => { const Icon = badge.icon; const unlocked = done.length >= badge.need; return <div key={badge.id} className={unlocked ? 'badge unlocked' : 'badge'}><Icon size={18} /><span>{badge.title}</span></div>; })}</div></article><article className="starter-card"><h2>First Day Plan</h2><p>Start with the English intro. Keep it short, speak slowly, and repeat the corrected version out loud.</p><div><span>1</span><strong>Copy the prompt</strong></div><div><span>2</span><strong>Practice in ChatGPT voice</strong></div><div><span>3</span><strong>Save one thing learned</strong></div><p className="next-level">{nextLevelXp} XP until next level</p></article></aside>
       </section>
       <section className="track-grid">{tracks.map((track) => { const Icon = track.icon; return <button key={track.id} className="track-tile" onClick={() => setActiveTrack(track.id)}><span style={{ background: track.color }}><Icon size={18} /></span><strong>{track.title}</strong><small>{trackCompletion(track)}% complete</small></button>; })}</section>
     </section>
