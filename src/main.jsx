@@ -5,33 +5,40 @@ import { Bot, Brain, Camera, Check, ChevronRight, Clipboard, ExternalLink, Flame
 import './style.css';
 
 const chatgptUrl = 'https://chatgpt.com/';
+const nannieGptUrl = window.NANNIE_GPT_URL || chatgptUrl;
 const mentorVoice = 'Teach me like the smartest, kindest, most compassionate mentor from Suwannaphum District in Roi Et Province. Make it feel familiar, warm, and encouraging for a Thai woman from Isaan, but keep the lesson focused on the topic. Use simple English with Thai support. Mention Suwannaphum, Roi Et, Bangkok, or Thonglor only when it naturally helps the example feel personal.';
 
+const helperRoles = {
+  'Bow Kitty': 'ช่วยเรื่องเสียง สำเนียง และประโยคที่พูดแล้วน่ารักเป็นธรรมชาติ',
+  'Brown Buddy': 'ช่วยให้กำลังใจ วางแผนเล็กๆ และทำให้ฝึกต่อได้ทุกวัน',
+  Chib: 'ช่วยสรุปความคืบหน้า ตรวจคำตอบ และเลือกบทต่อไปให้เหมาะกับ Nannie',
+};
+
 const tracks = [
-  { id: 'english', title: 'English Voice', icon: Mic2, color: '#2f9cf4', helper: 'Bow Kitty', description: 'Short speaking practice for real days out.', lessons: [
+  { id: 'english', title: 'English Voice', icon: Mic2, color: '#2f9cf4', helper: 'Bow Kitty', description: 'ฝึกพูดสั้นๆ สำหรับชีวิตจริง', lessons: [
     { id: 'eng-intro', xp: 18, title: 'แนะนำตัวแบบ Nannie', task: 'พูด 3 ประโยค: ชื่อ, มาจาก Suwannaphum/Roi Et, ตอนนี้อยู่แถว Thonglor/Bangkok', examples: ['My name is Nannie.', 'I am from Suwannaphum District in Roi Et.', 'Now I spend time near Thonglor in Bangkok.'], chatgpt: 'Use voice mode and help me practice a natural English self-introduction. I am Nannie from Suwannaphum District in Roi Et, and I spend time near Thonglor in Bangkok. Speak slowly, correct me gently, and give me one better version after I try.' },
     { id: 'eng-cafe', xp: 16, title: 'Thonglor cafe order', task: 'ซ้อมสั่งกาแฟหรือขนมในคาเฟ่ 3 รอบ', examples: ['Can I have an iced latte, please?', 'Less sweet, please.', 'Can I pay by QR?'], chatgpt: 'Roleplay as a friendly barista in a Thonglor cafe. Let me order in English. Keep replies short, correct only one mistake at a time, and make me repeat the best version.' },
     { id: 'eng-music', xp: 16, title: 'พูดเรื่องเพลงที่ชอบ', task: 'พูด 2 ประโยคเกี่ยวกับเพลงหรือศิลปินที่ชอบ', examples: ['I like this song because it feels fun.', 'This music makes me think of home.', 'The rhythm feels joyful.'], chatgpt: 'Help me talk in simple English about music I like. Ask easy questions, suggest natural phrases, and use a warm hometown feeling when I talk about songs that remind me of Roi Et.' },
   ] },
-  { id: 'fashion', title: 'Fashion Studio', icon: Camera, color: '#d97706', helper: 'Brown Buddy', description: 'Practice captions, outfit notes, and soft confidence.', lessons: [
+  { id: 'fashion', title: 'Fashion Studio', icon: Camera, color: '#d97706', helper: 'Brown Buddy', description: 'ฝึก caption, outfit notes, และความมั่นใจ', lessons: [
     { id: 'fit-caption', xp: 20, title: 'Emerald night-out caption', task: 'เขียน caption อังกฤษ 1 แบบจากลุคกลางคืน โทนสวย แพง นุ่มนวล', examples: ['Emerald glow in Bangkok.', 'Soft glam, calm heart.', 'A little sparkle for Thonglor night.'], chatgpt: 'Give me 10 natural Instagram captions in English for an emerald green night-out look in Bangkok. Make them feminine, confident, and not cringe. Explain the best 3 in Thai.' },
     { id: 'fit-shotlist', xp: 18, title: '3-shot outfit plan', task: 'วางแผนรูป 3 แบบ: mirror, detail, cafe table', examples: ['Mirror selfie', 'Jewelry detail', 'Cafe table mood'], chatgpt: 'Help me make a simple 3-shot outfit photo plan for a Bangkok cafe or dinner. Include pose ideas, caption ideas, and one styling tip.' },
     { id: 'fit-voice', xp: 14, title: 'Describe my outfit', task: 'พูดอังกฤษ 20 วินาที อธิบายชุดวันนี้', examples: ['I am wearing a green dress.', 'It feels elegant and soft.'], chatgpt: 'Use voice mode. Ask me to describe my outfit in English for 20 seconds. Then correct me gently and give me a polished version I can repeat.' },
   ] },
-  { id: 'ai', title: 'AI Skills', icon: Brain, color: '#23b26d', helper: 'Chib', description: 'Use ChatGPT as a small daily helper.', lessons: [
+  { id: 'ai', title: 'AI Skills', icon: Brain, color: '#23b26d', helper: 'Chib', description: 'ใช้ ChatGPT เป็นผู้ช่วยประจำวัน', lessons: [
     { id: 'ai-caption', xp: 20, title: 'Prompt ให้ได้ caption', task: 'ขอให้ ChatGPT ช่วยเขียน caption อังกฤษ 5 แบบสำหรับรูปวันนี้', examples: ['Make this sound natural.', 'Give me 5 cute captions.', 'Explain your changes in Thai.'], chatgpt: 'Teach me how to ask ChatGPT for better captions. First ask me what photo I have, then create 5 caption options and explain why each one works.' },
     { id: 'ai-translate', xp: 18, title: 'แปลแบบเป็นธรรมชาติ', task: 'เอาประโยคไทย 1 ประโยคไปให้ ChatGPT แปลเป็นอังกฤษแบบน่ารัก', examples: ['Translate this naturally.', 'Make it softer.', 'Make it sound confident.'], chatgpt: 'I will give you a Thai sentence. Translate it into natural English in 3 styles: cute, confident, and casual. Explain the difference in Thai.' },
   ] },
-  { id: 'astrology', title: 'Astrology Basics', icon: Sparkles, color: '#7864f4', helper: 'Bow Kitty', description: 'Simple chart language, one idea at a time.', lessons: [
+  { id: 'astrology', title: 'Astrology Basics', icon: Sparkles, color: '#7864f4', helper: 'Bow Kitty', description: 'เรียนภาษา astrology แบบง่ายทีละนิด', lessons: [
     { id: 'astro-virgo', xp: 18, title: 'Virgo คืออะไร?', task: 'เรียน 3 คำ: detail, routine, helpful แล้วเขียนว่า Virgo ช่วย Nannie ยังไง', examples: ['Virgo notices details.', 'Virgo likes clean routines.', 'Virgo helps with practice.'], chatgpt: 'Teach me beginner astrology in Thai and English. Start with Virgo. Give me 5 useful English words and one tiny quiz at the end.' },
     { id: 'astro-elements', xp: 16, title: 'Elements 101', task: 'จำ 4 ธาตุ: fire, earth, air, water แล้วเลือกธาตุที่รู้สึกเหมือนวันนี้', examples: ['Earth feels grounded.', 'Water feels emotional.', 'Fire feels brave.'], chatgpt: 'Explain the four astrology elements for a beginner. Use simple English with Thai explanations, then ask me which element fits my mood today.' },
     { id: 'astro-chart', xp: 16, title: 'Sun, Moon, Rising', task: 'เขียนความหมายง่ายๆ ของ Sun, Moon, Rising อย่างละ 1 บรรทัด', examples: ['Sun is identity.', 'Moon is feelings.', 'Rising is first impression.'], chatgpt: 'Teach me Sun, Moon, and Rising signs like I am a beginner. Keep it simple, give examples, and ask me to explain it back in easy English.' },
   ] },
-  { id: 'bowling', title: 'Bowling & Fun', icon: Trophy, color: '#f59e0b', helper: 'Brown Buddy', description: 'Easy social English through play.', lessons: [
+  { id: 'bowling', title: 'Bowling & Fun', icon: Trophy, color: '#f59e0b', helper: 'Brown Buddy', description: 'ฝึก English ผ่านเกมและ social phrases', lessons: [
     { id: 'bowl-score', xp: 14, title: 'Bowling phrases', task: 'ฝึกพูด 3 ประโยคเวลาไป bowling กับเพื่อน', examples: ['It is my turn.', 'Nice shot!', 'I almost got a strike.'], chatgpt: 'Roleplay a bowling night with me in English. Teach me casual phrases, cheer me on, and correct only the most important mistake.' },
     { id: 'bowl-invite', xp: 16, title: 'Invite a friend', task: 'เขียน invitation ภาษาอังกฤษ 1 ข้อความ', examples: ['Do you want to go bowling in Thonglor?', 'Let’s play one game after dinner.'], chatgpt: 'Help me write a friendly English message inviting someone to bowling in Thonglor. Give me 3 versions: cute, casual, and confident.' },
   ] },
-  { id: 'safety', title: 'Money & Safety', icon: ShieldCheck, color: '#18b7b1', helper: 'Chib', description: 'Kind words and clear boundaries.', lessons: [
+  { id: 'safety', title: 'Money & Safety', icon: ShieldCheck, color: '#18b7b1', helper: 'Chib', description: 'คำพูดสุภาพ ขอบเขตชัด และการเงินง่ายๆ', lessons: [
     { id: 'safety-dm', xp: 15, title: 'DM แปลกๆ ต้องระวัง', task: 'เขียนคำตอบสุภาพ 1 ประโยคเมื่อมีคนขอข้อมูลส่วนตัว', examples: ['I am not comfortable sharing that.', 'No, thank you.', 'Please contact me by email.'], chatgpt: 'Help me respond safely and politely in English when someone asks for private information. Give short replies and explain in Thai when to block or ignore.' },
     { id: 'money-budget', xp: 15, title: 'Thonglor day budget', task: 'เขียน spending plan ง่ายๆ: food, travel, save', examples: ['Food budget', 'Travel budget', 'Save a little first.'], chatgpt: 'Help me make a simple day budget for Bangkok or Thonglor. Use easy English categories: food, travel, shopping, and savings.' },
   ] },
@@ -51,7 +58,7 @@ const badges = [
   { id: 'safe', title: 'Safe Online', need: 10, icon: ShieldCheck },
 ];
 
-const storageKey = 'nannie-academy-progress-v7';
+const storageKey = 'nannie-academy-progress-v8';
 
 function readProgress() {
   try { return JSON.parse(localStorage.getItem(storageKey) || '{}'); } catch { return {}; }
@@ -70,8 +77,10 @@ function App() {
   const [answer, setAnswer] = useState('');
   const [submitStatus, setSubmitStatus] = useState('');
   const [promptStatus, setPromptStatus] = useState('');
+  const [summaryStatus, setSummaryStatus] = useState('');
   const done = progress.done || [];
   const daily = progress.daily || {};
+  const reflections = progress.reflections || [];
   const selected = tracks.find((track) => track.id === activeTrack) || tracks[0];
   const allLessons = useMemo(() => tracks.flatMap((track) => track.lessons.map((lesson) => ({ ...lesson, track: track.title, helper: track.helper }))), []);
   const todayLesson = allLessons[done.length % allLessons.length];
@@ -80,38 +89,73 @@ function App() {
   const nextLevelXp = xp % 80 === 0 && xp > 0 ? 80 : 80 - (xp % 80);
   const dailyDone = accountabilityItems.filter((item) => daily[item.id]).length;
   const accountabilityPercent = Math.min(100, Math.round(((done.length + dailyDone) / 30) * 100));
+  const weeklySummary = buildWeeklySummary(reflections, done, allLessons, xp, level);
 
   useEffect(() => { localStorage.setItem(storageKey, JSON.stringify(progress)); }, [progress]);
 
-  const completeQuest = (lessonId) => {
-    if (done.includes(lessonId)) return;
-    setProgress({ ...progress, done: [...done, lessonId], streak: Math.max(1, progress.streak || 0), lastDoneAt: new Date().toISOString() });
+  const saveProgress = (lesson, note) => {
+    const alreadyDone = done.includes(lesson.id);
+    const nextDone = alreadyDone ? done : [...done, lesson.id];
+    const nextReflection = note.trim() ? [{
+      id: `${lesson.id}-${Date.now()}`,
+      lessonId: lesson.id,
+      lessonTitle: lesson.title,
+      lessonArea: lesson.track,
+      helper: lesson.helper,
+      answer: note.trim().slice(0, 700),
+      createdAt: new Date().toISOString(),
+    }, ...reflections].slice(0, 20) : reflections;
+    setProgress({ ...progress, done: nextDone, reflections: nextReflection, streak: Math.max(1, progress.streak || 0), lastDoneAt: new Date().toISOString() });
+  };
+
+  const completeQuest = (lesson) => {
+    if (done.includes(lesson.id)) return;
+    saveProgress(lesson, '');
   };
   const toggleDaily = (itemId) => setProgress({ ...progress, daily: { ...daily, [itemId]: !daily[itemId] } });
-  const reset = () => { setProgress({ done: [], daily: {}, streak: 0 }); setAnswer(''); setSubmitStatus(''); setPromptStatus(''); };
+  const reset = () => { setProgress({ done: [], daily: {}, streak: 0, reflections: [] }); setAnswer(''); setSubmitStatus(''); setPromptStatus(''); setSummaryStatus(''); };
 
   const copyChatGPTPrompt = async (lesson = todayLesson) => {
     const prompt = `${mentorVoice}\n\nLesson: ${lesson.title}\n${lesson.chatgpt}\n\nAfter we finish, give me:\n1. three corrected sentences\n2. one phrase to memorize\n3. a tiny homework task I can paste into Nannie Academy`;
     try {
       await navigator.clipboard?.writeText(prompt);
-      setPromptStatus('Copied. Open ChatGPT, paste it, then tap voice.');
+      setPromptStatus('คัดลอกแล้ว เปิด Nannie Mentor/ChatGPT แล้วกด voice ได้เลย');
     } catch {
       setPromptStatus(prompt);
     }
   };
 
+  const copyWeeklySummary = async () => {
+    try {
+      await navigator.clipboard?.writeText(weeklySummary);
+      setSummaryStatus('คัดลอก weekly review แล้ว');
+    } catch {
+      setSummaryStatus(weeklySummary);
+    }
+  };
+
+  const copyBackup = async () => {
+    const backup = JSON.stringify({ app: 'Nannie Academy', exportedAt: new Date().toISOString(), progress }, null, 2);
+    try {
+      await navigator.clipboard?.writeText(backup);
+      setSummaryStatus('คัดลอก backup แล้ว');
+    } catch {
+      setSummaryStatus(backup);
+    }
+  };
+
   const submitToChib = async () => {
     if (!answer.trim()) { setSubmitStatus('เขียนคำตอบก่อนนะคะ'); return; }
-    setSubmitStatus('กำลังส่ง...');
+    setSubmitStatus('กำลังบันทึก...');
     const payload = { name: 'Nannie', lessonTitle: todayLesson.title, lessonArea: todayLesson.track, xp: todayLesson.xp, answer };
+    saveProgress(todayLesson, answer);
+    setAnswer('');
     try {
       const endpoint = window.NANNIE_API_ENDPOINT || '/api/submit';
       const response = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json', 'bypass-tunnel-reminder': '1' }, body: JSON.stringify(payload) });
       if (!response.ok) throw new Error('Submit failed');
-      completeQuest(todayLesson.id);
       setSubmitStatus('บันทึกแล้วค่ะ');
     } catch {
-      completeQuest(todayLesson.id);
       setSubmitStatus('บันทึกในเครื่องนี้แล้วค่ะ');
     }
   };
@@ -124,20 +168,39 @@ function App() {
     </aside>
 
     <section className="academy-main">
-      <header className="topbar"><div><p className="place-pill">Warm mentor voice from Suwannaphum</p><h1>Nannie Academy</h1><p>Pick one quest, practice with ChatGPT voice, then save what you learned.</p></div><button className="icon-action" onClick={reset} title="Reset progress"><RotateCcw size={18} /></button></header>
+      <header className="topbar"><div><p className="place-pill">ครูใจดีจาก Suwannaphum</p><h1>Nannie Academy</h1><p>เลือก 1 quest คุย voice กับ ChatGPT แล้วบันทึกสิ่งที่ได้เรียน</p></div><button className="icon-action" onClick={reset} title="Reset progress"><RotateCcw size={18} /></button></header>
 
-      <section className="dashboard-grid">
-        <motion.article className="profile-card" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }}><div className="mascot-banner"><MascotPair /><span className="spark one" /><span className="spark two" /></div><p className="eyebrow">Learner</p><h2>Nannie</h2><p className="muted">Suwannaphum roots, Bangkok pace, one small win at a time.</p><div className="stat-row"><Stat icon={Star} label="XP" value={xp} /><Stat icon={Trophy} label="Level" value={level} /><Stat icon={Flame} label="Streak" value={progress.streak || 0} /></div><div className="ring-row"><div className="ring" style={{ '--value': `${accountabilityPercent}%` }}><span>{accountabilityPercent}%</span></div><p>Daily practice, short reflection, steady progress.</p></div></motion.article>
-        <motion.article className="quest-card" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.06 }}><div className="card-head"><div><p className="eyebrow">Start here</p><h2>{todayLesson.title}</h2><p>{todayLesson.track} with {todayLesson.helper}</p></div><span className="xp-pill">+{todayLesson.xp} XP</span></div><p className="task-text">{todayLesson.task}</p><div className="example-row">{todayLesson.examples.map((example) => <code key={example}>{example}</code>)}</div><div className="chatgpt-inline"><button type="button" onClick={() => copyChatGPTPrompt(todayLesson)}><Clipboard size={16} /> Copy prompt</button><a href={chatgptUrl} target="_blank" rel="noreferrer"><MessageCircle size={16} /> Open ChatGPT</a></div>{promptStatus && <p className="prompt-status">{promptStatus}</p>}<textarea value={answer} onChange={(event) => setAnswer(event.target.value)} placeholder="หลังจากคุยกับ ChatGPT แล้ว พิมพ์ 1 อย่างที่ได้เรียนตรงนี้..." /><div className="action-row"><button onClick={submitToChib}><Send size={17} /> Save progress</button>{submitStatus && <span>{submitStatus}</span>}</div></motion.article>
-        <motion.article className="account-card" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}><div className="card-head compact"><div><h2>Today</h2><p>{dailyDone}/3 complete</p></div><ShieldCheck size={20} /></div>{accountabilityItems.map((item) => <button key={item.id} className={daily[item.id] ? 'check-item done' : 'check-item'} onClick={() => toggleDaily(item.id)}><span>{daily[item.id] && <Check size={14} />}</span><strong>{item.title}</strong><small>{item.detail}</small></button>)}</motion.article>
+      <section className="daily-focus">
+        <motion.article className="quest-card hero-quest" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }}><div className="card-head"><div><p className="eyebrow">ทำวันนี้</p><h2>{todayLesson.title}</h2><p>{todayLesson.track} with {todayLesson.helper}</p></div><span className="xp-pill">+{todayLesson.xp} XP</span></div><p className="task-text">{todayLesson.task}</p><div className="example-row">{todayLesson.examples.map((example) => <code key={example}>{example}</code>)}</div><div className="chatgpt-inline"><button type="button" onClick={() => copyChatGPTPrompt(todayLesson)}><Clipboard size={16} /> คัดลอก prompt</button><a href={nannieGptUrl} target="_blank" rel="noreferrer"><MessageCircle size={16} /> เปิด Nannie Mentor</a></div>{promptStatus && <p className="prompt-status">{promptStatus}</p>}<textarea value={answer} onChange={(event) => setAnswer(event.target.value)} placeholder="หลังจากคุย voice แล้ว พิมพ์ 1 อย่างที่ได้เรียนตรงนี้..." /><div className="action-row"><button onClick={submitToChib}><Send size={17} /> บันทึก progress</button>{submitStatus && <span>{submitStatus}</span>}</div></motion.article>
+        <motion.article className="profile-card" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}><div className="mascot-banner"><MascotPair /><span className="spark one" /><span className="spark two" /></div><p className="eyebrow">Nannie</p><h2>Level {level}</h2><p className="muted">Suwannaphum roots, Bangkok pace, one small win at a time.</p><div className="stat-row"><Stat icon={Star} label="XP" value={xp} /><Stat icon={Trophy} label="Done" value={done.length} /><Stat icon={Flame} label="Streak" value={progress.streak || 0} /></div><div className="ring-row"><div className="ring" style={{ '--value': `${accountabilityPercent}%` }}><span>{accountabilityPercent}%</span></div><p>Daily practice, short reflection, steady progress.</p></div></motion.article>
       </section>
 
-      <section className="content-grid"><article className="lesson-map"><div className="card-head"><div><h2>{selected.title}</h2><p>{selected.description}</p><p className="helper-line">Helper: {selected.helper}</p></div><span className="xp-pill">{selected.lessons.length} quests</span></div>{selected.lessons.map((lesson, index) => { const isDone = done.includes(lesson.id); return <button key={lesson.id} className={isDone ? 'lesson-node complete' : 'lesson-node'} onClick={() => completeQuest(lesson.id)} disabled={isDone}><span>{isDone ? <Check size={20} /> : index + 1}</span><div><strong>{lesson.title}</strong><p>{lesson.task}</p></div><ChevronRight size={18} /></button>; })}</article>
-        <aside className="side-stack"><article className="voice-card"><div className="mini-mascots"><div className="tiny-bear" /><div className="tiny-kitty" /></div><h2>ChatGPT Voice Room</h2><p>Use ChatGPT Plus for live speaking with a warm Suwannaphum mentor style.</p><a href={chatgptUrl} target="_blank" rel="noreferrer"><ExternalLink size={16} /> Open ChatGPT</a><small>Copy prompt, open ChatGPT, tap voice, practice, then save one thing you learned here.</small></article><article className="chatgpt-card"><h2>How To Start Tomorrow</h2><ol><li>Open Nannie Academy.</li><li>Tap Copy prompt.</li><li>Open ChatGPT and paste it.</li><li>Tap voice and practice for 3-5 minutes.</li><li>Come back and save one sentence.</li></ol><p>One quest per day is enough.</p></article><article className="rewards-card"><div className="card-head compact"><h2>Rewards</h2><p>Badges unlock as she practices</p></div><div className="badge-grid">{badges.map((badge) => { const Icon = badge.icon; const unlocked = done.length >= badge.need; return <div key={badge.id} className={unlocked ? 'badge unlocked' : 'badge'}><Icon size={18} /><span>{badge.title}</span></div>; })}</div></article><article className="starter-card"><h2>First Day Plan</h2><p>Start with the English intro. Keep it short, speak slowly, and repeat the corrected version out loud.</p><div><span>1</span><strong>Copy the prompt</strong></div><div><span>2</span><strong>Practice in ChatGPT voice</strong></div><div><span>3</span><strong>Save one thing learned</strong></div><p className="next-level">{nextLevelXp} XP until next level</p></article></aside>
+      <section className="content-grid"><article className="lesson-map"><div className="card-head"><div><h2>{selected.title}</h2><p>{selected.description}</p><p className="helper-line">{selected.helper}: {helperRoles[selected.helper]}</p></div><span className="xp-pill">{selected.lessons.length} quests</span></div>{selected.lessons.map((lesson, index) => { const isDone = done.includes(lesson.id); return <button key={lesson.id} className={isDone ? 'lesson-node complete' : 'lesson-node'} onClick={() => completeQuest(lesson)} disabled={isDone}><span>{isDone ? <Check size={20} /> : index + 1}</span><div><strong>{lesson.title}</strong><p>{lesson.task}</p></div><ChevronRight size={18} /></button>; })}</article>
+        <aside className="side-stack"><article className="today-card"><div className="card-head compact"><div><h2>วันนี้</h2><p>{dailyDone}/3 complete</p></div><ShieldCheck size={20} /></div>{accountabilityItems.map((item) => <button key={item.id} className={daily[item.id] ? 'check-item done' : 'check-item'} onClick={() => toggleDaily(item.id)}><span>{daily[item.id] && <Check size={14} />}</span><strong>{item.title}</strong><small>{item.detail}</small></button>)}</article><article className="voice-card"><div className="mini-mascots"><div className="tiny-bear" /><div className="tiny-kitty" /></div><h2>Nannie Mentor</h2><p>ใช้ ChatGPT Plus สำหรับคุย voice แบบครูใจดีจาก Suwannaphum</p><a href={nannieGptUrl} target="_blank" rel="noreferrer"><ExternalLink size={16} /> เปิด mentor</a><small>ถ้ายังไม่มี custom GPT ลิงก์นี้จะเปิด ChatGPT ปกติก่อน</small></article><article className="review-card"><h2>Weekly Review</h2><p>สรุปให้ Chib ดูว่าเรียนอะไรไปแล้ว จุดอ่อนคืออะไร และควรเรียนอะไรต่อ</p><button onClick={copyWeeklySummary}><Clipboard size={16} /> Copy review</button><button onClick={copyBackup}><Clipboard size={16} /> Copy backup</button>{summaryStatus && <small>{summaryStatus}</small>}</article></aside>
       </section>
+
       <section className="track-grid">{tracks.map((track) => { const Icon = track.icon; return <button key={track.id} className="track-tile" onClick={() => setActiveTrack(track.id)}><span style={{ background: track.color }}><Icon size={18} /></span><strong>{track.title}</strong><small>{trackCompletion(track)}% complete</small></button>; })}</section>
     </section>
   </main>;
+}
+
+function buildWeeklySummary(reflections, done, lessons, xp, level) {
+  const completed = done.map((id) => lessons.find((lesson) => lesson.id === id)).filter(Boolean);
+  const recent = reflections.slice(0, 7);
+  return [
+    'Nannie Academy weekly review',
+    `Level: ${level}`,
+    `XP: ${xp}`,
+    `Completed quests: ${completed.length}`,
+    '',
+    'Completed lessons:',
+    completed.length ? completed.map((lesson) => `- ${lesson.track}: ${lesson.title}`).join('\n') : '- None yet',
+    '',
+    'Recent reflections:',
+    recent.length ? recent.map((item) => `- ${item.lessonTitle}: ${item.answer}`).join('\n') : '- None yet',
+    '',
+    'Chib, please review her progress, praise effort first, correct gently, and choose the next best quest.',
+  ].join('\n');
 }
 
 function Stat({ icon: Icon, label, value }) {
