@@ -65,7 +65,7 @@ const badges = [
   { id: 'safe', title: 'Safe Online', need: 12, icon: ShieldCheck },
 ];
 
-const storageKey = 'nannie-academy-progress-v9';
+const storageKey = 'nannie-academy-progress-v10';
 
 function readProgress() {
   try { return JSON.parse(localStorage.getItem(storageKey) || '{}'); } catch { return {}; }
@@ -102,15 +102,7 @@ function App() {
   const saveProgress = (lesson, note) => {
     const alreadyDone = done.includes(lesson.id);
     const nextDone = alreadyDone ? done : [...done, lesson.id];
-    const nextReflection = note.trim() ? [{
-      id: `${lesson.id}-${Date.now()}`,
-      lessonId: lesson.id,
-      lessonTitle: lesson.title,
-      lessonArea: lesson.track,
-      helper: lesson.helper,
-      answer: note.trim().slice(0, 700),
-      createdAt: new Date().toISOString(),
-    }, ...reflections].slice(0, 20) : reflections;
+    const nextReflection = note.trim() ? [{ id: `${lesson.id}-${Date.now()}`, lessonId: lesson.id, lessonTitle: lesson.title, lessonArea: lesson.track, helper: lesson.helper, answer: note.trim().slice(0, 700), createdAt: new Date().toISOString() }, ...reflections].slice(0, 20) : reflections;
     setProgress({ ...progress, done: nextDone, reflections: nextReflection, streak: Math.max(1, progress.streak || 0), lastDoneAt: new Date().toISOString() });
   };
 
@@ -132,22 +124,14 @@ function App() {
   };
 
   const copyWeeklySummary = async () => {
-    try {
-      await navigator.clipboard?.writeText(weeklySummary);
-      setSummaryStatus('คัดลอก weekly review แล้ว');
-    } catch {
-      setSummaryStatus(weeklySummary);
-    }
+    try { await navigator.clipboard?.writeText(weeklySummary); setSummaryStatus('คัดลอก weekly review แล้ว'); }
+    catch { setSummaryStatus(weeklySummary); }
   };
 
   const copyBackup = async () => {
     const backup = JSON.stringify({ app: 'Nannie Academy', exportedAt: new Date().toISOString(), progress }, null, 2);
-    try {
-      await navigator.clipboard?.writeText(backup);
-      setSummaryStatus('คัดลอก backup แล้ว');
-    } catch {
-      setSummaryStatus(backup);
-    }
+    try { await navigator.clipboard?.writeText(backup); setSummaryStatus('คัดลอก backup แล้ว'); }
+    catch { setSummaryStatus(backup); }
   };
 
   const submitToChib = async () => {
@@ -174,10 +158,17 @@ function App() {
     </aside>
 
     <section className="academy-main">
-      <header className="topbar"><div><p className="place-pill">ครูใจดีจาก Suwannaphum</p><h1>Nannie Academy</h1><p>เรียนภาษา สร้าง confidence และฝึกทำ astrology content สำหรับ X</p></div><button className="icon-action" onClick={reset} title="Reset progress"><RotateCcw size={18} /></button></header>
+      <header className="topbar"><div><p className="place-pill">ครูใจดีจาก Suwannaphum</p><h1>Nannie Academy</h1><p>แผนเรียนส่วนตัวสำหรับภาษาอังกฤษ ความมั่นใจ และ astrology content บน X</p></div><button className="icon-action" onClick={reset} title="Reset progress"><RotateCcw size={18} /></button></header>
+
+      <section className="context-strip" aria-label="How Nannie Academy works">
+        <article><strong>นี่คืออะไร</strong><p>Nannie Academy คือแผนที่การเรียน: เลือกบท ฝึกกับ ChatGPT voice แล้วเก็บ progress ไว้ที่นี่</p></article>
+        <article><strong>ครูคือใคร</strong><p>Nannie Mentor จะสอนแบบอบอุ่น เหมือนคนเก่งจาก Suwannaphum/Roi Et ที่เข้าใจพื้นหลังของ Nannie</p></article>
+        <article><strong>เป้าหมายคืออะไร</strong><p>พูดอังกฤษดีขึ้น และค่อยๆ สร้างตัวตนบน X: Virgo, fashion, Bangkok, Isaan warmth, astrology memes</p></article>
+        <article><strong>ต้องบันทึกอะไร</strong><p>หลังคุย voice ให้พิมพ์ 1 อย่างที่ได้เรียน หรือ 1 post idea ที่อยากใช้จริง</p></article>
+      </section>
 
       <section className="daily-focus">
-        <motion.article className="quest-card hero-quest" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }}><div className="card-head"><div><p className="eyebrow">ทำวันนี้</p><h2>{todayLesson.title}</h2><p>{todayLesson.track} with {todayLesson.helper}</p></div><span className="xp-pill">+{todayLesson.xp} XP</span></div><p className="task-text">{todayLesson.task}</p><div className="example-row">{todayLesson.examples.map((example) => <code key={example}>{example}</code>)}</div><div className="chatgpt-inline"><button type="button" onClick={() => copyChatGPTPrompt(todayLesson)}><Clipboard size={16} /> คัดลอก prompt</button><a href={nannieGptUrl} target="_blank" rel="noreferrer"><MessageCircle size={16} /> เปิด Nannie Mentor</a></div>{promptStatus && <p className="prompt-status">{promptStatus}</p>}<textarea value={answer} onChange={(event) => setAnswer(event.target.value)} placeholder="หลังจากคุย voice แล้ว พิมพ์ 1 อย่างที่ได้เรียนหรือ post idea ที่ชอบตรงนี้..." /><div className="action-row"><button onClick={submitToChib}><Send size={17} /> บันทึก progress</button>{submitStatus && <span>{submitStatus}</span>}</div></motion.article>
+        <motion.article className="quest-card hero-quest" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }}><div className="card-head"><div><p className="eyebrow">ทำวันนี้</p><h2>{todayLesson.title}</h2><p>{todayLesson.track} with {todayLesson.helper}</p></div><span className="xp-pill">+{todayLesson.xp} XP</span></div><div className="daily-steps"><span>1 Copy prompt</span><span>2 Open mentor</span><span>3 Voice 3-5 min</span><span>4 Save one takeaway</span></div><p className="task-text">{todayLesson.task}</p><div className="example-row">{todayLesson.examples.map((example) => <code key={example}>{example}</code>)}</div><div className="chatgpt-inline"><button type="button" onClick={() => copyChatGPTPrompt(todayLesson)}><Clipboard size={16} /> คัดลอก prompt</button><a href={nannieGptUrl} target="_blank" rel="noreferrer"><MessageCircle size={16} /> เปิด Nannie Mentor</a></div>{promptStatus && <p className="prompt-status">{promptStatus}</p>}<textarea value={answer} onChange={(event) => setAnswer(event.target.value)} placeholder="หลังจากคุย voice แล้ว พิมพ์ 1 อย่างที่ได้เรียนหรือ post idea ที่ชอบตรงนี้..." /><div className="action-row"><button onClick={submitToChib}><Send size={17} /> บันทึก progress</button>{submitStatus && <span>{submitStatus}</span>}</div></motion.article>
         <motion.article className="profile-card" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}><div className="mascot-banner"><MascotPair /><span className="spark one" /><span className="spark two" /></div><p className="eyebrow">Nannie</p><h2>Level {level}</h2><p className="muted">Suwannaphum roots, Bangkok pace, Virgo voice, one small post at a time.</p><div className="stat-row"><Stat icon={Star} label="XP" value={xp} /><Stat icon={Trophy} label="Done" value={done.length} /><Stat icon={Flame} label="Streak" value={progress.streak || 0} /></div><div className="ring-row"><div className="ring" style={{ '--value': `${accountabilityPercent}%` }}><span>{accountabilityPercent}%</span></div><p>Daily practice, short reflection, steady progress.</p></div></motion.article>
       </section>
 
