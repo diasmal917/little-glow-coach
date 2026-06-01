@@ -39,16 +39,16 @@ module.exports = async function handler(req, res) {
     const client = new WebClient(token);
     const now = new Date().toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' });
 
-    const mentorText = `🎀 *Nannie homework submitted*\n*Lesson:* ${lessonTitle}\n*Area:* ${lessonArea}\n*XP:* ${xp}\n*Time:* ${now}\n\n*Answer:*\n${answer}\n\nChib action: grade this, congratulate if acceptable, assign next quest. If weak, give gentle Thai correction.`;
+    const mentorText = `🎀 *นานนี่ส่งบันทึกใหม่*\n*บท:* ${lessonTitle}\n*หมวด:* ${lessonArea}\n*แต้ม:* ${xp}\n*เวลา:* ${now}\n\n*คำตอบ:*\n${answer}\n\nสิ่งที่ควรทำต่อ: ชมความพยายามก่อน แล้วเลือกภารกิจถัดไปที่ยังสนุกและไม่หนักเกินไป`;
 
-    const accountabilityText = `📚 *Nannie submitted homework*\n*Lesson:* ${lessonTitle}\n*Area:* ${lessonArea}\n*XP:* ${xp}\n\nI’ll review it and keep her moving.`;
+    const accountabilityText = `📚 *นานนี่บันทึกความคืบหน้าแล้ว*\n*บท:* ${lessonTitle}\n*หมวด:* ${lessonArea}\n*แต้ม:* ${xp}\n\nคำตอบของเธอ:\n${answer}`;
 
     await client.chat.postMessage({ channel: diasUserId, text: accountabilityText });
     if (channelId) await client.chat.postMessage({ channel: channelId, text: mentorText });
     if (nannieUserId) {
       await client.chat.postMessage({
         channel: nannieUserId,
-        text: `เก่งมาก ${name} 💖 ส่งการบ้านแล้วนะคะ\nบทเรียน: *${lessonTitle}*\nChib จะตรวจและบอกขั้นตอนต่อไปให้ค่ะ ✨`
+        text: `เก่งมาก ${name} 💖 บันทึกแต้มแล้วนะคะ\nบทเรียน: *${lessonTitle}*\nวันนี้ทำแค่นี้ก็ถือว่าชนะแล้วค่ะ พรุ่งนี้กลับมาเก็บแต้มต่อได้เลย ✨`
       });
     }
 
